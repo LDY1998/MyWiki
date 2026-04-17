@@ -1,0 +1,10 @@
+Lilian Weng - Inference Optimization.md
+Ultra-Scale Playbook.md
+ML Engineering Book.md
+ZeRO Paper.md
+NCCL User Guide.md
+PyTorch FSDP Tutorial.md
+Transformer Math 101.md
+Illustrated Transformer.md
+Megatron-LM Paper.md
+JAX Scaling Book.md
