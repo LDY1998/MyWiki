@@ -5,7 +5,7 @@ status: active
 tags:
   - index
   - ai-infra
-updated: 2026-04-17
+updated: 2026-04-19
 ---
 
 # Infra Wiki - Index
@@ -18,6 +18,7 @@ Curated knowledge base for AI infrastructure targeting large-scale RL, robotics,
 - [[Infra Wiki Log]] - append-only record of ingests, reorgs, lint passes, and major synthesis work.
 - [[Physical AI Infra]] - map of the current learning path and core topic clusters.
 - [[llm-wiki]] - source idea for the persistent LLM-maintained wiki pattern.
+- [Daily Task Notes](../tasks/README.md) - operational notes for what was read or done each day.
 
 ## Learning plans
 
@@ -64,6 +65,7 @@ Curated knowledge base for AI infrastructure targeting large-scale RL, robotics,
 - `raw/assets/` - local attachments and images.
 - `wiki/` - maintained synthesis layer.
 - `plans/` - learning plans and phase roadmaps.
+- `tasks/` - daily operational notes for reading, ingest, synthesis, and maintenance work.
 - `tools/` - helper scripts and generated reports.
 - `archive/` - inactive or superseded material.
 

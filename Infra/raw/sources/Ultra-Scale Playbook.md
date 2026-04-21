@@ -43,3 +43,5 @@ Read through FSDP (chapters 1–4) in Week 1. Revisit TP/PP/Sequence in Phase 1.
 
 - Foundational for [[FSDP]], [[ZeRO]], [[Tensor Parallelism]], [[Pipeline Parallelism]].
 - Complements [[Transformer Math 101]] (the Playbook shows the systems, Transformer Math gives the arithmetic).
+- [[2024-04-18-Data Parallelism]] Data parallelism question
+	

@@ -6,7 +6,7 @@ tags:
   - knowledge-base
   - maintenance
   - schema
-updated: 2026-04-17
+updated: 2026-04-20
 ---
 
 # Wiki Maintenance Schema
@@ -45,6 +45,8 @@ Infra/
     projects/
 
   plans/
+
+  tasks/
 
   tools/
     scripts/
@@ -86,6 +88,8 @@ Infra/
 `wiki/projects/` contains project specs, portfolio artifacts, and implementation writeups.
 
 `plans/` contains human-facing learning plans, roadmaps, and phase plans.
+
+`tasks/` contains daily operational task notes. Use these notes to record what was read, ingested, synthesized, reorganized, or otherwise changed during a work session. These notes preserve process history; durable technical synthesis still belongs in `wiki/`.
 
 `tools/` contains helper scripts, generated reports, and local automation.
 
@@ -214,3 +218,14 @@ Updated:
 Notes:
 - Created durable directory structure for raw sources, wiki synthesis, plans, tools, and archive.
 ```
+
+## Daily Task Notes
+
+Use `tasks/YYYY-MM-DD.md` for daily work notes. Use `tasks/templates/Daily Task Note.md` as the insertable Obsidian template when creating a new daily note. Each note should record:
+
+- `Todos` - a short checkbox list seeded when the note is created.
+- `Read` - source files, wiki pages, plans, or raw materials reviewed.
+- `Done` - concrete wiki maintenance, ingest, synthesis, reorg, or planning work completed.
+- `Follow-ups` - next actions discovered during the session.
+
+Task notes are intentionally lightweight and may link to durable wiki pages with Obsidian wikilinks. Leave `Read` and `Done` empty on creation so they can be filled manually during the day. Continue to update [[Infra Wiki Log]] for ingests, structural changes, lint passes, and major synthesis.
