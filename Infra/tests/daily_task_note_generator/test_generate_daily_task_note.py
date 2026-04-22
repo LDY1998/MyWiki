@@ -159,6 +159,37 @@ class DailyTaskNoteGeneratorTests(unittest.TestCase):
         self.assertTrue(any("Transformer Memory Math" in line for line in generated))
         self.assertTrue(any("idempotency" in line.lower() for line in generated))
         self.assertTrue(all(line.startswith("- [ ]") for line in todos))
+        self.assertNotIn("- [ ] Finished task", todos)
+
+    def test_running_twice_is_idempotent_for_same_day(self) -> None:
+        repo = self.make_repo()
+        write(
+            repo / "tasks/2026-04-21.md",
+            """
+            # 2026-04-21 Tasks
+
+            ## Todos
+
+            - [ ] Carry me
+
+            ## Read
+
+            - Keep the block stable on repeat runs
+            """,
+        )
+
+        first = self.run_script(repo, "2026-04-22")
+
+        self.assertEqual(first.returncode, 0, first.stderr)
+        today = repo / "tasks/2026-04-22.md"
+        first_output = read(today)
+
+        second = self.run_script(repo, "2026-04-22")
+        second_output = read(today)
+
+        self.assertEqual(second.returncode, 0, second.stderr)
+        self.assertEqual(second_output, first_output)
+        self.assertEqual(len(todos_in(second_output)), 5)
 
     def test_updates_only_todos_in_existing_today_file(self) -> None:
         repo = self.make_repo()
@@ -221,7 +252,52 @@ class DailyTaskNoteGeneratorTests(unittest.TestCase):
         updated_prefix, updated_todos, updated_suffix = split_around_todos(updated_today)
 
         self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Intro paragraph that must remain untouched.", updated_prefix)
+        self.assertIn("## Context", updated_prefix)
+        self.assertIn("- leave this alone also", updated_suffix)
         self.assertEqual(updated_prefix, original_prefix)
         self.assertEqual(updated_suffix, original_suffix)
         self.assertNotEqual(updated_todos, original_todos)
         self.assertEqual(todos_in(updated_today), ["- [ ] Carry me"])
+
+    def test_uses_only_most_recent_prior_note_for_carry_forward_decision(self) -> None:
+        repo = self.make_repo()
+        write(
+            repo / "tasks/2026-04-20.md",
+            """
+            # 2026-04-20 Tasks
+
+            ## Todos
+
+            - [ ] Older task X
+            - [ ] Older task Y
+
+            ## Read
+            - older context that should be ignored
+            """,
+        )
+        write(
+            repo / "tasks/2026-04-21.md",
+            """
+            # 2026-04-21 Tasks
+
+            ## Todos
+
+            - [ ] Recent task A
+            - [x] Finished task
+
+            ## Follow-ups
+            - Recent context that should drive generation
+            """,
+        )
+
+        result = self.run_script(repo, "2026-04-22")
+        today = repo / "tasks/2026-04-22.md"
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(today.exists())
+        todos = todos_in(read(today))
+        self.assertEqual(len(todos), 5)
+        self.assertIn("- [ ] Recent task A", todos)
+        self.assertNotIn("- [ ] Older task X", todos)
+        self.assertNotIn("- [ ] Older task Y", todos)
