@@ -14,6 +14,43 @@ def write(path: Path, content: str) -> None:
     path.write_text(textwrap.dedent(content).lstrip(), encoding="utf-8")
 
 
+def read(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
+def todos_in(content: str) -> list[str]:
+    lines = content.splitlines()
+    try:
+        start = lines.index("## Todos") + 1
+    except ValueError:
+        return []
+
+    headings = {"## Todos", "## Read", "## Done", "## Follow-ups"}
+    todos: list[str] = []
+    for line in lines[start:]:
+        if line in headings:
+            break
+        if line.strip():
+            todos.append(line)
+    return todos
+
+
+def section_text(content: str, heading: str) -> str:
+    lines = content.splitlines()
+    try:
+        start = lines.index(heading) + 1
+    except ValueError:
+        return ""
+
+    headings = {"## Todos", "## Read", "## Done", "## Follow-ups"}
+    collected: list[str] = []
+    for line in lines[start:]:
+        if line in headings:
+            break
+        collected.append(line)
+    return "\n".join(collected).strip()
+
+
 class DailyTaskNoteGeneratorTests(unittest.TestCase):
     def make_repo(self) -> Path:
         repo = Path(tempfile.mkdtemp(prefix="daily-task-note-"))
@@ -68,8 +105,14 @@ class DailyTaskNoteGeneratorTests(unittest.TestCase):
         )
 
         result = self.run_script(repo, "2026-04-22")
+        today = repo / "tasks/2026-04-22.md"
 
-        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(today.exists())
+        self.assertEqual(
+            todos_in(read(today)),
+            ["- [ ] Keep task A", "- [ ] Keep task B"],
+        )
 
     def test_carries_one_item_and_fills_to_five(self) -> None:
         repo = self.make_repo()
@@ -90,8 +133,12 @@ class DailyTaskNoteGeneratorTests(unittest.TestCase):
         )
 
         result = self.run_script(repo, "2026-04-22")
+        today = repo / "tasks/2026-04-22.md"
 
-        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(today.exists())
+        self.assertEqual(len(todos_in(read(today))), 5)
+        self.assertIn("- [ ] Keep task A", todos_in(read(today)))
 
     def test_updates_only_todos_in_existing_today_file(self) -> None:
         repo = self.make_repo()
@@ -129,9 +176,23 @@ class DailyTaskNoteGeneratorTests(unittest.TestCase):
             ## Done
 
             - leave this alone too
+
+            ## Follow-ups
+
+            - leave this alone also
             """,
         )
+        original_today = read(repo / "tasks/2026-04-22.md")
 
         result = self.run_script(repo, "2026-04-22")
+        updated_today = read(repo / "tasks/2026-04-22.md")
 
-        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(section_text(updated_today, "## Read"), section_text(original_today, "## Read"))
+        self.assertEqual(section_text(updated_today, "## Done"), section_text(original_today, "## Done"))
+        self.assertEqual(
+            section_text(updated_today, "## Follow-ups"),
+            section_text(original_today, "## Follow-ups"),
+        )
+        self.assertNotEqual(todos_in(updated_today), todos_in(original_today))
+        self.assertEqual(todos_in(updated_today), ["- [ ] Carry me"])

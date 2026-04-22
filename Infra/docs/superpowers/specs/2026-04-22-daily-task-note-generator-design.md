@@ -164,7 +164,6 @@ Responsibilities:
 
 - Carry forward both items.
 - Generate 0 new items.
-- Generate 0 new items.
 
 ### Case D: 5 incomplete items yesterday
 
