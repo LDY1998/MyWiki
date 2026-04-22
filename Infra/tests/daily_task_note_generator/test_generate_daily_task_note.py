@@ -25,30 +25,32 @@ def todos_in(content: str) -> list[str]:
     except ValueError:
         return []
 
-    headings = {"## Todos", "## Read", "## Done", "## Follow-ups"}
     todos: list[str] = []
     for line in lines[start:]:
-        if line in headings:
+        if line.startswith("## "):
             break
         if line.strip():
             todos.append(line)
     return todos
 
 
-def section_text(content: str, heading: str) -> str:
+def split_around_todos(content: str) -> tuple[str, str, str]:
     lines = content.splitlines()
     try:
-        start = lines.index(heading) + 1
+        start = lines.index("## Todos")
     except ValueError:
-        return ""
+        return content, "", ""
 
-    headings = {"## Todos", "## Read", "## Done", "## Follow-ups"}
-    collected: list[str] = []
-    for line in lines[start:]:
-        if line in headings:
+    end = len(lines)
+    for index, line in enumerate(lines[start + 1 :], start + 1):
+        if line.startswith("## "):
+            end = index
             break
-        collected.append(line)
-    return "\n".join(collected).strip()
+
+    prefix = "\n".join(lines[:start])
+    todos = "\n".join(lines[start:end])
+    suffix = "\n".join(lines[end:])
+    return prefix, todos, suffix
 
 
 class DailyTaskNoteGeneratorTests(unittest.TestCase):
@@ -126,9 +128,18 @@ class DailyTaskNoteGeneratorTests(unittest.TestCase):
             - [ ] Keep task A
             - [x] Finished task
 
+            ## Read
+
+            - Revisit deterministic markdown parsing
+
+            ## Done
+
+            - Sketched carry-forward rules
+
             ## Follow-ups
 
             - Continue [[Transformer Memory Math]]
+            - Validate generated todo block idempotency
             """,
         )
 
@@ -137,8 +148,17 @@ class DailyTaskNoteGeneratorTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue(today.exists())
-        self.assertEqual(len(todos_in(read(today))), 5)
-        self.assertIn("- [ ] Keep task A", todos_in(read(today)))
+        todos = todos_in(read(today))
+        carried = "- [ ] Keep task A"
+        generated = [line for line in todos if line != carried]
+
+        self.assertEqual(len(todos), 5)
+        self.assertEqual(len(generated), 4)
+        self.assertEqual(len(set(todos)), 5)
+        self.assertIn(carried, todos)
+        self.assertTrue(any("Transformer Memory Math" in line for line in generated))
+        self.assertTrue(any("idempotency" in line.lower() for line in generated))
+        self.assertTrue(all(line.startswith("- [ ]") for line in todos))
 
     def test_updates_only_todos_in_existing_today_file(self) -> None:
         repo = self.make_repo()
@@ -161,9 +181,20 @@ class DailyTaskNoteGeneratorTests(unittest.TestCase):
             """
             ---
             title: 2026-04-22 Tasks
+            type: task-note
+            status: active
+            tags:
+              - tasks
+            updated: 2026-04-22
             ---
 
             # 2026-04-22 Tasks
+
+            Intro paragraph that must remain untouched.
+
+            ## Context
+
+            - existing non-todo content
 
             ## Todos
 
@@ -183,16 +214,14 @@ class DailyTaskNoteGeneratorTests(unittest.TestCase):
             """,
         )
         original_today = read(repo / "tasks/2026-04-22.md")
+        original_prefix, original_todos, original_suffix = split_around_todos(original_today)
 
         result = self.run_script(repo, "2026-04-22")
         updated_today = read(repo / "tasks/2026-04-22.md")
+        updated_prefix, updated_todos, updated_suffix = split_around_todos(updated_today)
 
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(section_text(updated_today, "## Read"), section_text(original_today, "## Read"))
-        self.assertEqual(section_text(updated_today, "## Done"), section_text(original_today, "## Done"))
-        self.assertEqual(
-            section_text(updated_today, "## Follow-ups"),
-            section_text(original_today, "## Follow-ups"),
-        )
-        self.assertNotEqual(todos_in(updated_today), todos_in(original_today))
+        self.assertEqual(updated_prefix, original_prefix)
+        self.assertEqual(updated_suffix, original_suffix)
+        self.assertNotEqual(updated_todos, original_todos)
         self.assertEqual(todos_in(updated_today), ["- [ ] Carry me"])
