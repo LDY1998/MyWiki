@@ -1,0 +1,3 @@
+display_name: Goal Decompose
+short_description: Convert a goal into subgoals, evidence, and a starter plan.
+default_prompt: Decompose this goal into a first-principles plan in goals/active/.

@@ -1,0 +1,3 @@
+display_name: Learning Review
+short_description: Create review artifacts from recent reading and wiki pages.
+default_prompt: Generate learning review artifacts from recent reading.

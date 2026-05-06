@@ -1,15 +1,33 @@
 # MyWiki — Index
 
-Top-level index for the personal knowledge base. Each subdomain maintains its own `raw/` (sources) and `wiki/` (curated pages).
+Unified personal knowledge base for LLM RL, post-training, and AI infrastructure.
 
-## Subdomains
+## Start Here
 
-- **[[AI/wiki/index|AI]]** — LLM post-training, RL algorithms (GRPO, DAPO, PPO, DPO), related papers and concepts.
-- **[[Infra/wiki/index|Infra]]** — AI infrastructure for large-scale RL, robotics, and world models. Distributed training, simulation, RL orchestration, world foundation models, VLAs, serving.
+- [[index|Wiki Index]] — main catalog for concepts, papers, plans, maps, and operational material.
+- [[Wiki Maintenance Schema]] — repository structure and maintenance rules.
+- [[Infra Wiki Log]] — append-only record of ingests, reorgs, lint passes, and major synthesis work.
+
+## Repository Areas
+
+- `wiki/` — durable synthesized knowledge.
+- `raw/ai/` — AI and LLM-RL source material.
+- `raw/infra/` — infrastructure and systems source material.
+- `raw/_inbox/` — newly captured material waiting for ingestion.
+- `tasks/` — daily operational notes and archives.
+- `plans/` — learning plans and roadmaps.
+- `docs/` — development specs, implementation plans, and process artifacts.
+- `claims/` — atomic claims and lint reports.
+- `goals/` — active and archived goals.
+- `learning/` — flashcards, quizzes, and review scheduling.
+- `tools/` — helper scripts and generated reports.
+- `.agents/skills/` — repo-local Codex skills, including the daily task note generator.
 
 ## Pattern
 
-See `AI/raw/LLM Wiki.md` for the system description. In short:
-- `raw/` holds one markdown file per external source (papers, blog posts, docs) with YAML frontmatter and a summary.
-- `wiki/concepts/` and `wiki/papers/` hold curated, interlinked concept and paper pages.
-- Each subdomain has an `index.md` cataloguing its contents.
+See `raw/ai/LLM Wiki.md` for the original system description. In short:
+- `raw/` stores source material and captured references.
+- `wiki/` stores the durable, interlinked synthesis layer.
+- `tasks/` records operational work without duplicating durable knowledge.
+- `claims/`, `goals/`, and `learning/` add the lightweight Knowledge OS expansion layer.
+- `.agents/skills/` contains invokable workflow skills for ingestion, linting, goals, daily notes, and learning review.

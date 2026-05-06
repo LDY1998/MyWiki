@@ -1,0 +1,3 @@
+display_name: Knowledge Ingest
+short_description: Ingest one raw source into grounded wiki synthesis.
+default_prompt: Ingest a raw source into the wiki following this repo's schema.

@@ -1,0 +1,3 @@
+display_name: Wiki Lint
+short_description: Audit wiki quality and write a dated lint report.
+default_prompt: Lint the wiki and write a report without applying major fixes.
